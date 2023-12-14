@@ -1,16 +1,3 @@
 watchdog
+ipython
 openai
-
-
-
-
-
-
-
-
-
-
-
-
-
-

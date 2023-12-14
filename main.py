@@ -2,6 +2,9 @@
 
 import base64
 import os
+import sys
+from IPython import embed
+from IPython.core import ultratb
 from openai import OpenAI
 import time
 from watchdog.observers import Observer
@@ -11,6 +14,9 @@ import config
 
 import warnings
 
+sys.excepthook = ultratb.FormattedTB(
+    mode="Verbose", color_scheme="Linux", call_pdb=True
+)
 
 client = OpenAI()
 
@@ -81,9 +87,26 @@ def send_image_to_openai(image_path, prompt):
             messages=request,
             max_tokens=3000,
         )
-        # print(response)
-        print(response.choices[0].message.content)
-        print("\r\n" * 5)
+
+        try:
+            os.system("clear")
+            print(response.choices[0].message.content)
+            print(
+                f"tokens: {response.usage.prompt_tokens}/{response.usage.completion_tokens}"
+            )
+
+            # Print the total token used and cost.
+            # $0.01 per 1k for input token
+            # $0.03 per 1k output token
+            cost = (
+                response.usage.completion_tokens * 0.00003
+                + response.usage.prompt_tokens * 0.00001
+            )
+            print(f"${cost}")
+        except:
+            embed()
+
+        print("\r\n" * 10)
     except Exception as e:
         print(f"Error sending image to OpenAI: {e}")
         return None

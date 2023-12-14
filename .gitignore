@@ -1,3 +1,4 @@
+share/
 config.py
 pyvenv.cfg
 CHANGES.rst
