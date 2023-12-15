@@ -1,0 +1,1 @@
+- If the directory has an `.instruction`, use its content for the prompt. The directory name is a fallback.

@@ -10,6 +10,8 @@ import time
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
+from PIL import Image, ImageOps
+
 import config
 
 import warnings
@@ -42,8 +44,27 @@ def monitor_directory(path):
 class NewFileHandler(FileSystemEventHandler):
     def on_created(self, event):
         if not event.is_directory:
+            if ".DS_Store" in event.src_path:
+                return
+
             directory_name = os.path.basename(os.path.dirname(event.src_path))
-            send_image_to_openai(event.src_path, directory_name)
+            webp_filepath = convert_to_webp(event.src_path)
+            send_image_to_openai(webp_filepath, directory_name)
+
+
+def convert_to_webp(image_path):
+    """
+    Converts the image to webp format by replacing the original file.
+    Generate a random uuid based name for the webp file.
+    """
+    target_path = os.path.dirname(image_path)
+    epoch_time = int(time.time())
+    target_file = f"/tmp/prompt_{epoch_time}.webp"
+
+    image = Image.open(image_path)
+    image = ImageOps.exif_transpose(image)
+    image.save(target_file, "webp", optimize=True, quality=80)
+    return target_file
 
 
 def send_image_to_openai(image_path, prompt):
